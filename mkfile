@@ -14,6 +14,6 @@ ins-private:
 	install -Dm755 ins-bin $PREFIX/share/ins/ins-bin && printf '#!/usr/bin/env bash\nREAL_BIN="$$PREFIX/share/ins/ins-bin"\n"$$REAL_BIN" "$$@"\nexit_code=$$?\nif [ $$exit_code -eq 0 ]; then\n    case "$$1" in rm|remove|uninstall) hash -r 2>/dev/null; [ -n "$$ZSH_VERSION" ] && rehash ;; esac\nfi\nexit $$exit_code\n' > ins && install -Dm755 ins $PREFIX/bin/ins && rm ins
 	sed -i 's/\\\$ \?/\$/g' $PREFIX/bin/ins
 	mkdir -p ~/.ins/src/ins
-	--git clone https://github.com/turbomaster95/ins ~/.ins/src/ins/
+	--(git clone -q https://github.com/turbomaster95/ins ~/.ins/src/ins/ 2>/dev/null || true)
 
 do: build
