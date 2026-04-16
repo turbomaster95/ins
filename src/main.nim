@@ -688,8 +688,14 @@ proc doInstall*(res: ParseResult) =
       label: "bootstrap.sh", buildCmd: "sh bootstrap.sh " & meta & " " & build))
 
   if fileExists("setup.sh"):
-    candidates.add(BuildCandidate(
-      label: "setup.sh", buildCmd: "sh setup.sh " & meta & " " & build))
+    var command: string
+
+    if pkg == "sane.tools/mk":
+      command = "sh setup.sh --from-ins " & meta & " " & build
+    else:
+      command = "sh setup.sh " & meta & " " & build
+
+    candidates.add(BuildCandidate(label: "setup.sh", buildCmd: command))
 
   # --- Execution Engine: try each candidate, fall through on failure ---
 
