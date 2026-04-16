@@ -979,7 +979,12 @@ proc main() =
 
   case res.action
   of actionInstall:
-    doInstall(res)
+    let (alreadyInstalled, _) = stateLookup(res.target)
+    if alreadyInstalled:
+      loglns "Package '" & res.target & "' is already installed. Switching to update..."
+      doUpdate(res.target)
+    else:
+      doInstall(res)
   of actionRemove:
     doUninstall(res.target)
   of actionUpdate:
