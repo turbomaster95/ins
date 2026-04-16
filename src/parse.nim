@@ -2,7 +2,7 @@ import std/[os, strutils]
 
 type
   Action* = enum
-    actionNone, actionInstall, actionRemove, actionHelp
+    actionNone, actionInstall, actionRemove, actionHelp, actionUpdate, actionList, actionListRegistry
 
   ParseResult* = object
     action*: Action
@@ -47,7 +47,18 @@ proc parseArgs*(): ParseResult =
       target = args[1]
       # We don't usually need flags for remove, but we can capture them
       meta = args.joinArgs(2)
-
+  
+  of "up", "update":
+    action = actionUpdate
+    if args.len > 1:
+       target = args[1]
+  
+  of "l", "list":
+    if args.len > 1 and args[1] == "--all" or args.len > 1 and args[1] == "-a": 
+      action = actionListRegistry
+    else:
+      action = actionList
+  
   of "h", "help", "--help":
     return ParseResult(action: actionHelp)
 
