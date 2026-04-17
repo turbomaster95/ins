@@ -1,9 +1,11 @@
-build > ins-bin: src/main.nim
+export files = {find src/*.nim}
+
+build > ins-bin: $files
 	nim c -o:ins-bin -d:ssl -d:release --opt:speed src/main.nim
-	"Build Completed!"
+	"Build Completed!" (Build=green)
 
 install: build ins-private
-	"Installed ins successfully!"
+	"Installed ins successfully!" (ins=cyan)
 
 clean:
 	rm -rf ins-bin
