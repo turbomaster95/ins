@@ -2,8 +2,7 @@ import std/[json, strutils, sequtils, osproc, os]
 import loggins
 import state
 
-
-proc checkCmd(cmd: string): bool =
+proc checkCmd*(cmd: string): bool =
   if cmd == "": return true
   let subCmds = cmd.split(" && ")
   for sub in subCmds:
