@@ -415,12 +415,12 @@ proc runPostInstallHook(sourceDir: string) =
       # --- Logic Integration ---
       # Check if the required interpreter (sh, python3, etc.) exists
       if checkCmd(cmd):
-        echo "Running hook: ", hook
+        loglns "Running hook: ", hook
         discard execCmd(cmd)
       else:
-        echo "Skipping hook due to missing dependencies."
+        logWarn "Skipping hook due to missing dependencies."
       
-      return # Exit after attempting the first found hook
+      return 
 
 # =============================================================================
 # BUILD CANDIDATE TYPE
