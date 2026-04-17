@@ -387,17 +387,40 @@ proc deployDefaultConfigs(sourceDir: string, pkgName: string): seq[string] =
 # =============================================================================
 
 proc runPostInstallHook(sourceDir: string) =
-  ## Runs the first matching post-install shell hook found in the repo.
   let hooks = @[
-    sourceDir / "install.sh",
     sourceDir / "post-install.sh",
+    sourceDir / "post_install.sh",
+    sourceDir / "postinstall.sh",
+    sourceDir / "install.sh",
+    sourceDir / ".hooks" / "post-install.sh",
     sourceDir / "hooks" / "post-install.sh",
+    sourceDir / "post-install.py",
+    sourceDir / "post-install.pl",
+    sourceDir / "post-install.rb"
   ]
+
   for hook in hooks:
     if fileExists(hook):
-      loglns "Running post-install hook: ", hook
-      discard execCmd("sh " & quoteShell(hook))
-      return
+      let ext = splitFile(hook).ext
+      var cmd = ""
+
+      # Mapping extensions to their required binaries
+      case ext
+      of ".sh": cmd = "sh " & quoteShell(hook)
+      of ".py": cmd = "python3 " & quoteShell(hook)
+      of ".pl": cmd = "perl " & quoteShell(hook)
+      of ".rb": cmd = "ruby " & quoteShell(hook)
+      else: cmd = "sh " & quoteShell(hook)
+
+      # --- Logic Integration ---
+      # Check if the required interpreter (sh, python3, etc.) exists
+      if checkCmd(cmd):
+        echo "Running hook: ", hook
+        discard execCmd(cmd)
+      else:
+        echo "Skipping hook due to missing dependencies."
+      
+      return # Exit after attempting the first found hook
 
 # =============================================================================
 # BUILD CANDIDATE TYPE
