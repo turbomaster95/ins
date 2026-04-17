@@ -2,7 +2,7 @@ import parse
 import loggins
 import state
 import registry
-import std/[json, strutils, os, osproc, times, sequtils]
+import std/[json, strutils, os, osproc, times]
 import helpers 
 
 type
@@ -12,10 +12,6 @@ type
     buildCmd:  string
     instCmd:   string
     needsClean: bool
-
-# =============================================================================
-# DEPENDENCY RESOLVER
-# =============================================================================
 
 # Forward declaration so dep resolver can call doInstall recursively.
 proc doInstall*(res: ParseResult)
@@ -43,10 +39,6 @@ proc resolveDependencies(pkgName: string) =
     depRes.target = depName
     doInstall(depRes)
 
-# =============================================================================
-# CORE INSTALLER
-# =============================================================================
-
 proc doInstall*(res: ParseResult) =
   let pkg = res.target
   if pkg == "": return
@@ -54,7 +46,7 @@ proc doInstall*(res: ParseResult) =
   var repoName = ""
   var subPath  = ""
 
-  # 1. Protocol-Aware Splitting
+  # Splitting the url
   if pkg.contains("://"):
     let urlParts     = pkg.split("://")
     let protocol     = urlParts[0]
@@ -70,16 +62,16 @@ proc doInstall*(res: ParseResult) =
     repoName = parts[0]
     subPath  = if parts.len > 1: parts[1..^1].join("/") else: ""
 
-  # 2. Dependency resolution (before building this package)
+  # dependency resolution (before building this package)
   resolveDependencies(repoName)
 
-  # 3. URL Retrieval
+  # Get the URL
   let url = findPackage(repoName)
   if url == "":
     logErr "Package '" & repoName & "' not found in registry and is not a valid URL."
     quit(1)
 
-  # 4. Determine clone folder (inside ~/.ins/src/)
+  # Find the clone folder (inside ~/.ins/src/)
   let srcRoot = getSourceRoot()
   var folder  = repoName.lastPathPart()
   if folder.endsWith(".git"):
@@ -87,7 +79,7 @@ proc doInstall*(res: ParseResult) =
 
   loglns "Found " & folder & " at " & url
 
-  # 5. Clone Logic
+  # Cloning done here
   let cloneDir = srcRoot / folder
   let prevDir  = getCurrentDir()
   setCurrentDir(srcRoot)
@@ -105,7 +97,6 @@ proc doInstall*(res: ParseResult) =
   else:
     loglns "Folder '" & folder & "' already exists. Skipping clone."
 
-  # 6. Enter directory (handling sub-paths)
   let targetDir = if subPath != "": cloneDir / subPath else: cloneDir
   if dirExists(targetDir):
     loglns "Entering directory: ", targetDir
@@ -115,7 +106,7 @@ proc doInstall*(res: ParseResult) =
     setCurrentDir(prevDir)
     quit(1)
 
-  # 7. Submodules
+  # Submodules initing
   if fileExists(".gitmodules"):
     loglns "Submodules found! Initializing..."
     if execCmd("git submodule update --init --recursive") != 0:
@@ -123,10 +114,10 @@ proc doInstall*(res: ParseResult) =
       setCurrentDir(prevDir)
       quit(1)
 
-  # 8. Capture git hash for ledger
+  # Capture git hash for state json file
   let gitHash = getGitHash(cloneDir)
 
-  # 9. Build flags
+  # Build flags
   loglns "--- Installing: ", targetDir.lastPathPart(), " ---"
   if res.metaArgs != "":
     loglns "Applying flags to metabuild: ", res.metaArgs
@@ -136,7 +127,6 @@ proc doInstall*(res: ParseResult) =
   let meta  = res.metaArgs
   let build = res.makeArgs
 
-  # --- Build System Detection: collect ALL candidates in priority order ---
   var candidates: seq[BuildCandidate] = @[]
 
   # GENERATOR-BASED systems (highest priority)
@@ -393,10 +383,6 @@ proc doInstall*(res: ParseResult) =
   setCurrentDir(prevDir)
   logDone "Done installing " & folder & "!"
 
-# =============================================================================
-# UPDATE COMMAND
-# =============================================================================
-
 proc doUpdate*(pkgName: string) =
   let (found, record) = stateLookup(pkgName)
   if not found:
@@ -435,10 +421,6 @@ proc doUpdate*(pkgName: string) =
   updRes.target = pkgName
   doInstall(updRes)
 
-# =============================================================================
-# UNINSTALL COMMAND
-# =============================================================================
-
 proc doUninstall*(pkgName: string) =
   let (found, record) = stateLookup(pkgName)
   if not found:
@@ -468,7 +450,6 @@ proc doUninstall*(pkgName: string) =
   else:
     logWarn "Source directory not found or outside ins root; skipping removal."
 
-  # Configs are intentionally left to preserve user changes
   if record.configsDeployed.len > 0:
     loglns "Config files left in place to preserve your edits:"
     for c in record.configsDeployed:
@@ -476,10 +457,6 @@ proc doUninstall*(pkgName: string) =
 
   stateRemove(pkgName)
   logDone "Uninstalled " & pkgName & "."
-
-# =============================================================================
-# LIST COMMAND
-# =============================================================================
 
 proc doList*() =
   let state = loadState()
@@ -502,11 +479,7 @@ proc doList*() =
     echo ""
   echo "═══════════════════════════════════════════════════"
 
-# =============================================================================
-# HELP & MAIN
-# =============================================================================
-
-let version = "0.2.0"
+let version = "0.2.6"
 
 proc showHelp() =
   let templateHelp = """

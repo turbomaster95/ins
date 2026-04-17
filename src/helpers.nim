@@ -126,6 +126,7 @@ proc findBuiltBinaries*(buildDir: string, pkgBaseName: string): seq[string] =
             # Read the first two bytes for a shebang #!
             let f = open(path)
             var head: array[2, char]
+            # some warning here, dont understand lol
             let bytesRead = f.readChars(head, 0, 2)
             f.close()
 
