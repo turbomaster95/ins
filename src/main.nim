@@ -483,7 +483,7 @@ proc doList*() =
     echo ""
   echo "═══════════════════════════════════════════════════"
 
-let version = "0.2.6"
+let version = "0.3.0"
 
 proc showHelp() =
   let templateHelp = """
