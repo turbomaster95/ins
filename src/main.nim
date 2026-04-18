@@ -370,7 +370,7 @@ proc doInstall*(res: ParseResult) =
 
   # --- State Ledger ---
   let record = InstalledPkg(
-    name:            repoName,
+    name:            res.target,
     url:             url,
     hash:            gitHash,
     installedAt:     $now(),
@@ -513,14 +513,11 @@ Example Usage:
 proc main() =
   let res = parseArgs()
 
-  let lookupName = if res.target.contains('/'): res.target.split('/')[0] 
-                   else: res.target  
-
   case res.action
   of actionInstall:
-    let (alreadyInstalled, _) = stateLookup(lookupName)
+    let (alreadyInstalled, _) = stateLookup(res.target)
     if alreadyInstalled:
-      loglns "Package '" & lookupName & "' is already installed. Switching to update..."
+      loglns "Package '" & res.target & "' is already installed. Switching to update..."
       doUpdate(res.target)
     else:
       doInstall(res)
