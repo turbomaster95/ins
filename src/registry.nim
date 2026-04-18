@@ -2,7 +2,7 @@ import std/[httpclient, json, strutils]
 import loggins
 import state
 
-const RegistryUrl = "https://raw.githubusercontent.com/turbomaster95/registry/main/packages.json"
+const RegistryUrl = "https://rawcdn.githack.com/turbomaster95/registry/refs/heads/main/packages.json"
 
 proc findPackage*(pkgName: string): string =
   ## Returns the URL from the registry OR the input if it looks like a repo URL.
