@@ -2,7 +2,7 @@ build: src/loggins.nim src/main.nim src/parse.nim src/state.nim src/registry.nim
 	nim c -o:ins-bin -d:ssl -d:release --opt:speed src/main.nim
 	"Build Completed!" (Build=green)
 
-install: build ins-private
+install: ins-private
 	"Installed ins successfully!" (ins=cyan)
 
 clean:
