@@ -384,12 +384,15 @@ proc doInstall*(res: ParseResult) =
   logDone "Done installing " & folder & "!"
 
 proc doUpdate*(pkgName: string) =
-  let (found, record) = stateLookup(pkgName)
+  let baseName = if pkgName.contains('/'): pkgName.split('/')[0] 
+                 else: pkgName
+
+  let (found, record) = stateLookup(baseName)
   if not found:
     logErr "Package '" & pkgName & "' is not installed."
     quit(1)
 
-  loglns "Checking for updates: " & pkgName
+  loglns "Checking for updates: " & baseName
 
   let srcRoot = getSourceRoot()
   let gitRoot = findGitRoot(record.sourceDir, srcRoot)
@@ -422,12 +425,15 @@ proc doUpdate*(pkgName: string) =
   doInstall(updRes)
 
 proc doUninstall*(pkgName: string) =
-  let (found, record) = stateLookup(pkgName)
+  let baseName = if pkgName.contains('/'): pkgName.split('/')[0] 
+                 else: pkgName
+
+  let (found, record) = stateLookup(baseName)
   if not found:
     logErr "Package '" & pkgName & "' is not tracked in the ledger."
     quit(1)
 
-  loglns "Uninstalling: " & pkgName
+  loglns "Uninstalling: " & baseName
 
   # Remove symlinks
   for link in record.symlinks:
@@ -507,11 +513,14 @@ Example Usage:
 proc main() =
   let res = parseArgs()
 
+  let lookupName = if res.target.contains('/'): res.target.split('/')[0] 
+                   else: res.target  
+
   case res.action
   of actionInstall:
-    let (alreadyInstalled, _) = stateLookup(res.target)
+    let (alreadyInstalled, _) = stateLookup(lookupName)
     if alreadyInstalled:
-      loglns "Package '" & res.target & "' is already installed. Switching to update..."
+      loglns "Package '" & lookupName & "' is already installed. Switching to update..."
       doUpdate(res.target)
     else:
       doInstall(res)
