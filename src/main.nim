@@ -461,7 +461,7 @@ proc doUninstall*(pkgName: string) =
     for c in record.configsDeployed:
       loglns "  ", c
 
-  stateRemove(pkgName)
+  stateRemove(baseName)
   logDone "Uninstalled " & pkgName & "."
 
 proc doList*() =
