@@ -384,15 +384,12 @@ proc doInstall*(res: ParseResult) =
   logDone "Done installing " & folder & "!"
 
 proc doUpdate*(pkgName: string) =
-  let baseName = if pkgName.contains('/'): pkgName.split('/')[0] 
-                 else: pkgName
-
-  let (found, record) = stateLookup(baseName)
+  let (found, record) = stateLookup(pkgName)
   if not found:
     logErr "Package '" & pkgName & "' is not installed."
     quit(1)
 
-  loglns "Checking for updates: " & baseName
+  loglns "Checking for updates: " & pkgName
 
   let srcRoot = getSourceRoot()
   let gitRoot = findGitRoot(record.sourceDir, srcRoot)
@@ -425,15 +422,12 @@ proc doUpdate*(pkgName: string) =
   doInstall(updRes)
 
 proc doUninstall*(pkgName: string) =
-  let baseName = if pkgName.contains('/'): pkgName.split('/')[0] 
-                 else: pkgName
-
-  let (found, record) = stateLookup(baseName)
+  let (found, record) = stateLookup(pkgName)
   if not found:
     logErr "Package '" & pkgName & "' is not tracked in the ledger."
     quit(1)
 
-  loglns "Uninstalling: " & baseName
+  loglns "Uninstalling: " & pkgName
 
   # Remove symlinks
   for link in record.symlinks:
