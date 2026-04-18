@@ -14,7 +14,7 @@ type
     needsClean: bool
 
 # Forward declaration so dep resolver can call doInstall recursively.
-proc doInstall*(res: ParseResult)
+proc doInstall*(res: ParseResult, isLoop = false)
 
 proc resolveDependencies(pkgName: string) =
   ## Reads "dependencies": [] from the registry entry and installs each one
@@ -39,7 +39,7 @@ proc resolveDependencies(pkgName: string) =
     depRes.target = depName
     doInstall(depRes)
 
-proc doInstall*(res: ParseResult) =
+proc doInstall*(res: ParseResult, isLoop = false) =
   let pkg = res.target
   if pkg == "": return
 
@@ -342,6 +342,10 @@ proc doInstall*(res: ParseResult) =
     break
 
   if not succeeded:
+    if isLoop == true:
+       loglns "Build failed more than once!"
+       loglns "This probably means that one or more libraries are not installed."
+       quit(1)
     var anyNeedsClean = false
     for cand in candidates:
       if cand.needsClean:
@@ -351,7 +355,7 @@ proc doInstall*(res: ParseResult) =
       logErr "All build systems failed. Retrying with Hard Reset..."
       setCurrentDir(prevDir)
       removeDir(cloneDir)
-      doInstall(res)
+      doInstall(res, isLoop = true)
       return
     else:
       logErr "All build systems failed for " & folder
