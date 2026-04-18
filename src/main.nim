@@ -343,7 +343,7 @@ proc doInstall*(res: ParseResult, isLoop = false) =
 
   if not succeeded:
     if isLoop == true:
-       loglns "Build failed more than once!"
+       logErr "Build failed more than once!"
        loglns "This probably means that one or more libraries are not installed."
        quit(1)
     var anyNeedsClean = false
