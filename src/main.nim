@@ -112,6 +112,8 @@ proc doInstall*(res: ParseResult, isLoop = false) =
     if execCmd("git submodule update --init --recursive") != 0:
       logErr "Submodule initialization failed."
       setCurrentDir(prevDir)
+      removeDir(cloneDir)
+      loglns "Cleaning up.."
       quit(1)
 
   # Capture git hash for state json file
@@ -329,6 +331,8 @@ proc doInstall*(res: ParseResult, isLoop = false) =
       if execCmd(cand.instCmd) != 0:
         logErr "Couldn't install dependencies for project!"
         setCurrentDir(prevDir)
+        removeDir(cloneDir)
+        loglns "Cleaning up.."
         quit(1)
 
     if execCmd(cand.buildCmd) != 0:
@@ -345,6 +349,9 @@ proc doInstall*(res: ParseResult, isLoop = false) =
     if isLoop == true:
        logErr "Build failed more than once!"
        loglns "This probably means that one or more libraries are not installed."
+       setCurrentDir(prevDir)
+       removeDir(cloneDir)
+       loglns "Cleaning up.."
        quit(1)
     var anyNeedsClean = false
     for cand in candidates:
@@ -360,6 +367,8 @@ proc doInstall*(res: ParseResult, isLoop = false) =
     else:
       logErr "All build systems failed for " & folder
       setCurrentDir(prevDir)
+      removeDir(cloneDir)
+      loglns "Cleaning up.."
       quit(1)
 
   # --- Post-Build: Binary Linking ---
