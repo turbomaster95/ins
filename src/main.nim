@@ -281,6 +281,10 @@ proc doInstall*(res: ParseResult, isLoop = false) =
     candidates.add(BuildCandidate(
       label: "bootstrap.sh", buildCmd: "sh bootstrap.sh " & meta & " " & build))
 
+  if fileExists("build.sh"):
+    candidates.add(BuildCandidate(
+      label: "build.sh", buildCmd: "sh build.sh " & meta & " " & build))
+
   if fileExists("setup.sh"):
     var command: string
 
