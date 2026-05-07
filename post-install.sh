@@ -9,14 +9,41 @@ mkdir -p "$HOME/.ins/src/ins"
 mkdir -p "$P/share/ins"
 mkdir -p "$P/bin"
 
+# Define paths
+INS_SRC="$HOME/.ins/src/ins"
+MK_SRC="$HOME/.ins/src/sane.tools/mk"
+
+# Function to get hash safely
+get_hash() {
+    if [ -d "$1/.git" ]; then
+        # Run git inside the directory using -C
+        git -C "$1" rev-parse --short HEAD 2>/dev/null || echo "unknown"
+    else
+        echo "not-cloned"
+    fi
+}
+
+# Fetch the hashes
+INS_HASH=$(get_hash "$INS_SRC")
+MK_HASH=$(get_hash "$MK_SRC")
+
 cat <<EOF > "$HOME/.ins/state.json"
 [
   {
     "name": "ins",
     "url": "https://github.com/turbomaster95/ins",
+    "hash": "$INS_HASH",
     "installedAt": "$(date --iso-8601=seconds)",
-    "sourceDir": "$HOME/.ins/src/ins",
+    "sourceDir": "$INS_SRC",
     "symlinks": ["$P/bin/ins", "$P/share/ins"]
+  },
+  {
+    "name": "sane.tools/mk",
+    "url": "https://github.com/turbomaster95/sane.tools",
+    "hash": "$MK_HASH",
+    "installedAt": "$(date --iso-8601=seconds)",
+    "sourceDir": "$MK_SRC",
+    "symlinks": ["$P/bin/mk"]
   }
 ]
 EOF
