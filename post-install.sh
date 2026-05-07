@@ -9,11 +9,9 @@ mkdir -p "$HOME/.ins/src/ins"
 mkdir -p "$P/share/ins"
 mkdir -p "$P/bin"
 
-# Define paths
 INS_SRC="$HOME/.ins/src/ins"
-MK_SRC="$HOME/.ins/src/sane.tools/mk"
+MK_SRC="$HOME/.ins/src/sane.tools"
 
-# Function to get hash safely
 get_hash() {
     if [ -d "$1/.git" ]; then
         # Run git inside the directory using -C
